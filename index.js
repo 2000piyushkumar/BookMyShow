@@ -1,25 +1,30 @@
+const cors = require('cors');
 const express = require('express');
 const mongoose = require('mongoose');
 
 const userRoute = require('./routes/route.user.js');
-
+const theatreRoute = require('./routes/route.theatre.js');
+const movieRoute = require('./routes/route.movie.js');
+const bookingRoute = require('./routes/route.booking.js');
 
 const app = express();
-const PORT = 5000;
-const db_password = "OrZCF2PScyVjjxNK@";
 
-mongoose.connect(`mongodb+srv://vickykumar1998:${db_password}cluster0.khdlhgj.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`)
+mongoose.connect(process.env.MongoDB_URI)
 .then(() => console.log('MongoDB is connected'))
 .catch((error) => console.error("MongoDB connection error", error));
 
 app.use(express.json());
+app.use(cors());
 
 app.get("/", (req, res) => {
     res.send("Connection is Alive");
-})
+});
 
 app.use("/user", userRoute);
+app.use("/theatre", theatreRoute);
+app.use("/movie", movieRoute);
+app.use("/booking", bookingRoute);
 
-app.listen(PORT, () => {
-  console.log(`Server running at https://localhost:${PORT}`);
+app.listen(process.env.PORT, () => {
+  console.log(`Server running at https://localhost:${process.env.PORT}`);
 });

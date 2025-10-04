@@ -8,11 +8,11 @@ const signToken = (payload) => {
 }
 
 const verifyToken = (token) => {
-    try{
+    try {
         const payload = jwt.verify(token, JWT_SECRET);
         return payload;
     }
-    catch (err){
+    catch (err) {
         return null;
     }
 }

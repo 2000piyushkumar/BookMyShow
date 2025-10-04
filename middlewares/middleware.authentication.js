@@ -6,7 +6,7 @@ const JWT_SECRET = "efrofroifnrofjerofnroifnirhfnirefvbriufvbiurf";
 
 const authenticateToken = (req, res, next) => {
   const authHeader = req.headers['authorization'];
-  if (!authHeader){
+  if (!authHeader) {
     return res.status(401).json({ error: "Please authenticate to use this resource." })
   }
 
@@ -17,7 +17,7 @@ const authenticateToken = (req, res, next) => {
 
   const payload = verifyToken(token);
 
-  if (!payload){
+  if (!payload) {
     return res.status(401).json({ error: "Invalid token." });
   }
 

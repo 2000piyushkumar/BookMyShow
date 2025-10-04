@@ -1,8 +1,7 @@
-const crypto = require('node:crypto');
+const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
 const z = require('zod');
-
-const User = require("../models/model.user");
+const userService = require('../services/service.user');
 const { signToken } = require("../utils/util.token");
 
 const userSignUpSchema = z.object({
@@ -26,7 +25,7 @@ const userSignInSchema = z.object({
 
 const getAllUsers = async (req, res) => {
   try {
-    const users = await User.find();
+    const users = await userService.getAllUsers();
 
     if (!users || users.length === 0) {
       return res.status(404).json({ error: "No users found in database." });
@@ -61,8 +60,7 @@ const signUpHandler = async (req, res) => {
       .update(password + salt)
       .digest('hex');
 
-    const newUser = new User({ name, email, password: hashedPassword, salt });
-    await newUser.save();
+    const newUser = await userService.createUser(name, email, hashedPassword, salt);
 
     res.status(201).json({ message: 'User registered successfully', userId: newUser._id });
   }
@@ -82,7 +80,7 @@ const signInHandler = async (req, res) => {
 
     const { email, password } = result.data;
 
-    const existingUser = await User.findOne({ email });
+    const existingUser = await userService.findUserByEmail(email);
     if (!existingUser) {
       return res.status(401).json({ error: "Email doesn't exist in Database." });
     }
@@ -96,19 +94,18 @@ const signInHandler = async (req, res) => {
       return res.status(401).json({ error: 'Invalid password.' });
     }
 
-    const token = signToken({ userId: existingUser._id, name: existingUser.name, email: existingUser.email });
-    res.cookie('token', token, {httpOnly: true}).status(200).json({
-      message: 'Login successful.',
-      user: {
-        name: existingUser.name,
-        email: existingUser.email,
-        jwtToken: token,
-      }
-    });
-
+    const token = signToken({ userId: existingUser._id, name: existingUser.name, email: existingUser.email, role: existingUser.role });
+    res.status(200).json({ token: token });
   } catch (error) {
     res.status(500).json({ error: 'Server error during sign-in.'});
   }
 }
 
-module.exports = { getAllUsers, signUpHandler, signInHandler };
+const logOutHandler = async (req, res) => {
+  res.cookie("token", "", {
+    maxAge: 1
+  })
+  res.redirect("/");
+}
+
+module.exports = { getAllUsers, signUpHandler, signInHandler, logOutHandler };
